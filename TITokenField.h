@@ -86,6 +86,7 @@ typedef enum {
 @property (nonatomic, assign) BOOL editable;
 @property (nonatomic, assign) BOOL resultsModeEnabled;
 @property (nonatomic, assign) BOOL removesTokensOnEndEditing;
+@property (nonatomic, assign) CGFloat minimumRightPadding;
 @property (nonatomic, readonly) int numberOfLines;
 @property (nonatomic, strong) NSCharacterSet * tokenizingCharacters;
 
@@ -118,11 +119,17 @@ typedef enum {
 
 @interface TIToken : UIControl
 @property (nonatomic, copy) NSString * title;
+@property (nonatomic, copy) NSString * superscript;
 @property (nonatomic, strong) id representedObject;
 @property (nonatomic, strong) UIFont * font;
+@property (nonatomic, strong) UIFont * superscriptFont;
 @property (nonatomic, strong) UIColor * tintColor UI_APPEARANCE_SELECTOR;
+@property (nonatomic, strong) UIColor * textColor;
 @property (nonatomic, assign) TITokenAccessoryType accessoryType;
 @property (nonatomic, assign) CGFloat maxWidth;
+@property (nonatomic, assign) CGFloat maxSuperscriptWidth;
+@property (nonatomic, assign) BOOL showsBackground;
+@property (nonatomic, assign) BOOL adjustsTextWhenHighlighted;
 
 - (id)initWithTitle:(NSString *)aTitle;
 - (id)initWithTitle:(NSString *)aTitle representedObject:(id)object;
