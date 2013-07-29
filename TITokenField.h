@@ -131,6 +131,8 @@ typedef enum {
 @property (nonatomic, assign) CGFloat maxSuperscriptWidth;
 @property (nonatomic, assign) BOOL showsBackground;
 @property (nonatomic, assign) BOOL adjustsTextWhenHighlighted;
+@property (nonatomic, assign) CGFloat verticalTextPadding;
+@property (nonatomic, assign) CGFloat horizontalTextPadding;
 
 - (id)initWithTitle:(NSString *)aTitle;
 - (id)initWithTitle:(NSString *)aTitle representedObject:(id)object;

@@ -75,8 +75,8 @@
 	[_tokenField addTarget:self action:@selector(tokenFieldDidBeginEditing:) forControlEvents:UIControlEventEditingDidBegin];
 	[_tokenField addTarget:self action:@selector(tokenFieldDidEndEditing:) forControlEvents:UIControlEventEditingDidEnd];
 	[_tokenField addTarget:self action:@selector(tokenFieldTextDidChange:) forControlEvents:UIControlEventEditingChanged];
-	[_tokenField addTarget:self action:@selector(tokenFieldFrameWillChange:) forControlEvents:TITokenFieldControlEventFrameWillChange];
-	[_tokenField addTarget:self action:@selector(tokenFieldFrameDidChange:) forControlEvents:TITokenFieldControlEventFrameDidChange];
+	[_tokenField addTarget:self action:@selector(tokenFieldFrameWillChange:) forControlEvents:(UIControlEvents)TITokenFieldControlEventFrameWillChange];
+	[_tokenField addTarget:self action:@selector(tokenFieldFrameDidChange:) forControlEvents:(UIControlEvents)TITokenFieldControlEventFrameDidChange];
 	[_tokenField setDelegate:self];
 	[self addSubview:_tokenField];
 	
@@ -983,8 +983,6 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 #pragma mark - TIToken -
 //==========================================================
 
-CGFloat const hTextPadding = 14;
-CGFloat const vTextPadding = 8;
 CGFloat const kDisclosureThickness = 2.5;
 UILineBreakMode const kLineBreakMode = UILineBreakModeTailTruncation;
 
@@ -1028,8 +1026,10 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
         _highlightedTextColor = [UIColor whiteColor];
 		
 		_accessoryType = TITokenAccessoryTypeNone;
-		_maxWidth = 200;
-        _maxSuperscriptWidth = 20;
+		_maxWidth = 200.0f;
+        _maxSuperscriptWidth = 20.0f;
+        _verticalTextPadding = 8.0f;
+        _horizontalTextPadding = 14.0f;
         _showsBackground = YES;
         _adjustsTextWhenHighlighted = YES;
 		
@@ -1136,6 +1136,24 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
 	}
 }
 
+- (void)setVerticalTextPadding:(CGFloat)verticalTextPadding {
+    
+    if (_verticalTextPadding != verticalTextPadding) {
+        _verticalTextPadding = verticalTextPadding;
+        [self sizeToFit];
+        [self setNeedsDisplay];
+    }
+}
+
+- (void)setHorizontalTextPadding:(CGFloat)horizontalTextPadding {
+    
+    if (_horizontalTextPadding != horizontalTextPadding) {
+        _horizontalTextPadding = horizontalTextPadding;
+        [self sizeToFit];
+        [self setNeedsDisplay];
+    }
+}
+
 - (void)setMaxSuperscriptWidth:(CGFloat)maxSuperscriptWidth {
     
     if (_maxSuperscriptWidth != maxSuperscriptWidth){
@@ -1174,14 +1192,14 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
 	
 	if (_accessoryType == TITokenAccessoryTypeDisclosureIndicator){
 		CGPathRelease(CGPathCreateDisclosureIndicatorPath(CGPointZero, _font.pointSize, kDisclosureThickness, &accessoryWidth));
-		accessoryWidth += floorf(hTextPadding / 2);
+		accessoryWidth += floorf(_horizontalTextPadding / 2);
 	}
     
     CGFloat superscriptWidth = [_superscript sizeWithFont:_superscriptFont forWidth:_maxSuperscriptWidth lineBreakMode:kLineBreakMode].width;
-	CGSize titleSize = [_title sizeWithFont:_font forWidth:(_maxWidth - hTextPadding - accessoryWidth - superscriptWidth) lineBreakMode:kLineBreakMode];
-	CGFloat height = floorf(titleSize.height + vTextPadding);
+	CGSize titleSize = [_title sizeWithFont:_font forWidth:(_maxWidth - _horizontalTextPadding - accessoryWidth - superscriptWidth) lineBreakMode:kLineBreakMode];
+	CGFloat height = floorf(titleSize.height + _verticalTextPadding);
 	
-	return (CGSize){MAX(floorf(superscriptWidth + titleSize.width + hTextPadding + accessoryWidth), height - 3), height};
+	return (CGSize){MAX(floorf(superscriptWidth + titleSize.width + _horizontalTextPadding + accessoryWidth), height - 3), height};
 }
 
 
@@ -1252,9 +1270,9 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
         CGContextRestoreGState(context);
         
         if (_accessoryType == TITokenAccessoryTypeDisclosureIndicator){
-            CGPoint arrowPoint = CGPointMake(self.bounds.size.width - floorf(hTextPadding / 2), (self.bounds.size.height / 2) - 1);
+            CGPoint arrowPoint = CGPointMake(self.bounds.size.width - floorf(_horizontalTextPadding / 2), (self.bounds.size.height / 2) - 1);
             CGPathRef disclosurePath = CGPathCreateDisclosureIndicatorPath(arrowPoint, _font.pointSize, kDisclosureThickness, &accessoryWidth);
-            accessoryWidth += floorf(hTextPadding / 2);
+            accessoryWidth += floorf(_horizontalTextPadding / 2);
             
             CGContextAddPath(context, disclosurePath);
             CGContextSetFillColor(context, (CGFloat[4]){1, 1, 1, 1});
@@ -1301,10 +1319,10 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
         CGContextRestoreGState(context);
 	}
 	
-	CGSize titleSize = [_title sizeWithFont:_font forWidth:(_maxWidth - hTextPadding - accessoryWidth - superscirptWidth) lineBreakMode:kLineBreakMode];
+	CGSize titleSize = [_title sizeWithFont:_font forWidth:(_maxWidth - _horizontalTextPadding - accessoryWidth - superscirptWidth) lineBreakMode:kLineBreakMode];
 	CGFloat vPadding = floor((self.bounds.size.height - titleSize.height) / 2);
-	CGFloat titleWidth = ceilf(self.bounds.size.width - hTextPadding - accessoryWidth - superscirptWidth);
-	CGRect textBounds = CGRectMake(floorf(hTextPadding / 2) + superscirptWidth, vPadding - 1, titleWidth, floorf(self.bounds.size.height - (vPadding * 2)));
+	CGFloat titleWidth = ceilf(self.bounds.size.width - _horizontalTextPadding - accessoryWidth - superscirptWidth);
+	CGRect textBounds = CGRectMake(floorf(_horizontalTextPadding / 2) + superscirptWidth, vPadding - 1, titleWidth, floorf(self.bounds.size.height - (vPadding * 2)));
 	
     if (_adjustsTextWhenHighlighted) {
         CGContextSetFillColorWithColor(context, drawHighlighted ? _highlightedTextColor.CGColor : _textColor.CGColor);
