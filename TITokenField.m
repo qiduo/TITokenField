@@ -445,10 +445,6 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 	[self addTarget:self action:@selector(didEndEditing) forControlEvents:UIControlEventEditingDidEnd];
 	[self addTarget:self action:@selector(didChangeText) forControlEvents:UIControlEventEditingChanged];
 	
-	[self.layer setShadowColor:[[UIColor blackColor] CGColor]];
-	[self.layer setShadowOpacity:0.6];
-	[self.layer setShadowRadius:12];
-	
 	[self setPromptText:@"To:"];
 	[self setText:kTextEmpty];
 	
@@ -712,11 +708,11 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 
 - (CGFloat)layoutTokensInternal {
 	
-	CGFloat topMargin = floor(self.font.lineHeight * 4 / 7);
+	CGFloat topMargin = floor(self.font.lineHeight * 4 / 9);
 	CGFloat leftMargin = self.leftViewWidth + 12;
 	CGFloat hPadding = 8;
 	CGFloat rightMargin = self.rightViewWidth + hPadding;
-	CGFloat lineHeight = self.font.lineHeight + topMargin + 5;
+	CGFloat lineHeight = self.font.lineHeight + topMargin + 1;
 	
 	_numberOfLines = 1;
 	_tokenCaret = (CGPoint){leftMargin, (topMargin - 1)};
@@ -993,7 +989,7 @@ CGFloat const kDisclosureThickness = 2.5;
 UILineBreakMode const kLineBreakMode = UILineBreakModeTailTruncation;
 
 @interface TIToken (Private)
-CGPathRef CGPathCreateTokenPath(CGSize size, BOOL innerPath);
+CGPathRef CGPathCreateTokenPath(CGRect rect, BOOL innerPath);
 CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat height, CGFloat thickness, CGFloat * width);
 - (BOOL)getTintColorRed:(CGFloat *)red green:(CGFloat *)green blue:(CGFloat *)blue alpha:(CGFloat *)alpha;
 @end
@@ -1028,6 +1024,8 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
 		_font = aFont;
         _superscriptFont = [UIFont systemFontOfSize:8.0f];
 		_tintColor = [TIToken blueTintColor];
+        _textColor = [UIColor blackColor];
+        _highlightedTextColor = [UIColor whiteColor];
 		
 		_accessoryType = TITokenAccessoryTypeNone;
 		_maxWidth = 200;
@@ -1191,28 +1189,18 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
 - (void)drawRect:(CGRect)rect {
 	
     CGFloat accessoryWidth = 0;
-    CGFloat superscirptWidth = 0;
+    CGSize superscriptSize = [_superscript sizeWithFont:_superscriptFont forWidth:_maxSuperscriptWidth lineBreakMode:kLineBreakMode];
+    CGFloat superscirptWidth = superscriptSize.width;
     BOOL drawHighlighted = (self.selected || self.highlighted);
     
 	CGContextRef context = UIGraphicsGetCurrentContext();
     
-    if (_superscript) {
-		CGSize superscriptSize = [_superscript sizeWithFont:_superscriptFont forWidth:_maxSuperscriptWidth lineBreakMode:kLineBreakMode];
-		superscirptWidth = superscriptSize.width;
-		CGRect superscirptBounds = CGRectMake(0.0f, 0.0f, superscirptWidth, superscriptSize.height);
-        
-        CGContextSaveGState(context);
-		CGContextSetFillColorWithColor(context, [_textColor CGColor]);
-		[_superscript drawInRect:superscirptBounds withFont:_superscriptFont lineBreakMode:kLineBreakMode];
-        CGContextRestoreGState(context);
-	}
-    
     if (_showsBackground) {
         // Draw the outline.
-        CGSize tokenSize = CGSizeMake(self.bounds.size.width - superscirptWidth, self.bounds.size.height);
+        CGRect tokenRect = CGRectMake(superscirptWidth, 0.0f, self.bounds.size.width - superscirptWidth, self.bounds.size.height);
         
         CGContextSaveGState(context);
-        CGPathRef outlinePath = CGPathCreateTokenPath(tokenSize, NO);
+        CGPathRef outlinePath = CGPathCreateTokenPath(tokenRect, NO);
         CGContextAddPath(context, outlinePath);
         CGPathRelease(outlinePath);
         
@@ -1239,7 +1227,7 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
         
         CGContextRestoreGState(context);
         
-        CGPathRef innerPath = CGPathCreateTokenPath(tokenSize, YES);
+        CGPathRef innerPath = CGPathCreateTokenPath(tokenRect, YES);
         
         // Draw a white background so we can use alpha to lighten the inner gradient
         CGContextSaveGState(context);
@@ -1303,6 +1291,15 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
         
         CGColorSpaceRelease(colorspace);
     }
+    
+    if (_superscript.length > 0) {
+		CGRect superscirptBounds = CGRectMake(0.0f, 0.0f, superscirptWidth, superscriptSize.height);
+        
+        CGContextSaveGState(context);
+		CGContextSetFillColorWithColor(context, [_textColor CGColor]);
+		[_superscript drawInRect:superscirptBounds withFont:_superscriptFont lineBreakMode:kLineBreakMode];
+        CGContextRestoreGState(context);
+	}
 	
 	CGSize titleSize = [_title sizeWithFont:_font forWidth:(_maxWidth - hTextPadding - accessoryWidth - superscirptWidth) lineBreakMode:kLineBreakMode];
 	CGFloat vPadding = floor((self.bounds.size.height - titleSize.height) / 2);
@@ -1310,21 +1307,22 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
 	CGRect textBounds = CGRectMake(floorf(hTextPadding / 2) + superscirptWidth, vPadding - 1, titleWidth, floorf(self.bounds.size.height - (vPadding * 2)));
 	
     if (_adjustsTextWhenHighlighted) {
-        CGContextSetFillColorWithColor(context, drawHighlighted ? [[UIColor whiteColor] CGColor] : [_textColor CGColor]);
+        CGContextSetFillColorWithColor(context, drawHighlighted ? _highlightedTextColor.CGColor : _textColor.CGColor);
     } else {
-        CGContextSetFillColorWithColor(context, [_textColor CGColor]);
+        CGContextSetFillColorWithColor(context, _textColor.CGColor);
     }
 	
 	[_title drawInRect:textBounds withFont:_font lineBreakMode:kLineBreakMode];
 }
 
-CGPathRef CGPathCreateTokenPath(CGSize size, BOOL innerPath) {
+CGPathRef CGPathCreateTokenPath(CGRect rect, BOOL innerPath) {
 	
-	CGMutablePathRef path = CGPathCreateMutable();
-	CGFloat arcValue = (size.height / 2) - 1;
+    CGFloat arcValue = (rect.size.height / 2) - 1;
 	CGFloat radius = arcValue - (innerPath ? (1 / [[UIScreen mainScreen] scale]) : 0);
-	CGPathAddArc(path, NULL, arcValue, arcValue, radius, (M_PI / 2), (M_PI * 3 / 2), NO);
-	CGPathAddArc(path, NULL, size.width - arcValue, arcValue, radius, (M_PI  * 3 / 2), (M_PI / 2), NO);
+    
+	CGMutablePathRef path = CGPathCreateMutable();
+	CGPathAddArc(path, NULL, rect.origin.x + arcValue, arcValue, radius, (M_PI / 2), (M_PI * 3 / 2), NO);
+	CGPathAddArc(path, NULL, rect.origin.x + rect.size.width - arcValue, arcValue, radius, (M_PI  * 3 / 2), (M_PI / 2), NO);
 	CGPathCloseSubpath(path);
 	
 	return path;

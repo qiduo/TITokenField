@@ -125,6 +125,7 @@ typedef enum {
 @property (nonatomic, strong) UIFont * superscriptFont;
 @property (nonatomic, strong) UIColor * tintColor UI_APPEARANCE_SELECTOR;
 @property (nonatomic, strong) UIColor * textColor;
+@property (nonatomic, strong) UIColor * highlightedTextColor;
 @property (nonatomic, assign) TITokenAccessoryType accessoryType;
 @property (nonatomic, assign) CGFloat maxWidth;
 @property (nonatomic, assign) CGFloat maxSuperscriptWidth;
