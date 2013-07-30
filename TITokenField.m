@@ -1339,8 +1339,8 @@ CGPathRef CGPathCreateTokenPath(CGRect rect, BOOL innerPath) {
 	CGFloat radius = arcValue - (innerPath ? (1 / [[UIScreen mainScreen] scale]) : 0);
     
 	CGMutablePathRef path = CGPathCreateMutable();
-	CGPathAddArc(path, NULL, rect.origin.x + arcValue, arcValue, radius, (M_PI / 2), (M_PI * 3 / 2), NO);
-	CGPathAddArc(path, NULL, rect.origin.x + rect.size.width - arcValue, arcValue, radius, (M_PI  * 3 / 2), (M_PI / 2), NO);
+	CGPathAddArc(path, NULL, rect.origin.x + arcValue, rect.origin.y + arcValue, radius, (M_PI / 2), (M_PI * 3 / 2), NO);
+	CGPathAddArc(path, NULL, rect.origin.x + rect.size.width - arcValue, rect.origin.y + arcValue, radius, (M_PI  * 3 / 2), (M_PI / 2), NO);
 	CGPathCloseSubpath(path);
 	
 	return path;
