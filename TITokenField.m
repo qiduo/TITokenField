@@ -1030,6 +1030,8 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
         _maxSuperscriptWidth = 20.0f;
         _verticalTextPadding = 8.0f;
         _horizontalTextPadding = 14.0f;
+        _underlineWidth = 0.0f;
+        _underlineType = TITokenUnderlineTypeSolid;
         _showsBackground = YES;
         _adjustsTextWhenHighlighted = YES;
 		
@@ -1167,6 +1169,20 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
     
     if (_showsBackground != showsBackground) {
         _showsBackground = showsBackground;
+        [self setNeedsDisplay];
+    }
+}
+
+- (void)setUnderlineType:(TITokenUnderlineType)underlineType {
+    if (_underlineType != underlineType) {
+        _underlineType = underlineType;
+        [self setNeedsDisplay];
+    }
+}
+
+- (void)setUnderlineWidth:(CGFloat)underlineWidth {
+    if (_underlineWidth != underlineWidth) {
+        _underlineWidth = underlineWidth;
         [self setNeedsDisplay];
     }
 }
@@ -1331,6 +1347,20 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
     }
 	
 	[_title drawInRect:textBounds withFont:_font lineBreakMode:kLineBreakMode];
+    
+    if (_underlineWidth > 0) {
+        CGContextSaveGState(context);
+        CGContextSetStrokeColorWithColor(context, _textColor.CGColor);
+        CGContextSetLineWidth(context, _underlineWidth);
+        if (_underlineType == TITokenUnderlineTypeDashed) {
+            CGFloat dashes[] = {_underlineWidth, _underlineWidth};
+            CGContextSetLineDash(context, 0.0f, dashes, 2);
+        }
+        CGContextMoveToPoint(context, CGRectGetMinX(textBounds), CGRectGetMaxY(textBounds) + 1.0f);
+        CGContextAddLineToPoint(context, CGRectGetMaxX(textBounds), CGRectGetMaxY(textBounds) + 1.0f);
+        CGContextStrokePath(context);
+        CGContextRestoreGState(context);
+    }
 }
 
 CGPathRef CGPathCreateTokenPath(CGRect rect, BOOL innerPath) {

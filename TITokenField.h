@@ -117,6 +117,11 @@ typedef enum {
 	TITokenAccessoryTypeDisclosureIndicator = 1,
 } TITokenAccessoryType;
 
+typedef enum {
+    TITokenUnderlineTypeSolid,
+	TITokenUnderlineTypeDashed,
+} TITokenUnderlineType;
+
 @interface TIToken : UIControl
 @property (nonatomic, copy) NSString * title;
 @property (nonatomic, copy) NSString * superscript;
@@ -127,6 +132,8 @@ typedef enum {
 @property (nonatomic, strong) UIColor * textColor;
 @property (nonatomic, strong) UIColor * highlightedTextColor;
 @property (nonatomic, assign) TITokenAccessoryType accessoryType;
+@property (nonatomic, assign) TITokenUnderlineType underlineType;
+@property (nonatomic, assign) CGFloat underlineWidth;
 @property (nonatomic, assign) CGFloat maxWidth;
 @property (nonatomic, assign) CGFloat maxSuperscriptWidth;
 @property (nonatomic, assign) BOOL showsBackground;
