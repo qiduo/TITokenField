@@ -86,6 +86,7 @@ typedef enum {
 @property (nonatomic, assign) BOOL editable;
 @property (nonatomic, assign) BOOL resultsModeEnabled;
 @property (nonatomic, assign) BOOL removesTokensOnEndEditing;
+@property (nonatomic, assign) BOOL becomesFirstResponderOnAddingToken;
 @property (nonatomic, assign) CGFloat minimumRightPadding;
 @property (nonatomic, readonly) int numberOfLines;
 @property (nonatomic, strong) NSCharacterSet * tokenizingCharacters;

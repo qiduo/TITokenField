@@ -409,6 +409,7 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 @synthesize editable = _editable;
 @synthesize resultsModeEnabled = _resultsModeEnabled;
 @synthesize removesTokensOnEndEditing = _removesTokensOnEndEditing;
+@synthesize becomesFirstResponderOnAddingToken = _becomesFirstResponderOnAddingToken;
 @synthesize numberOfLines = _numberOfLines;
 @synthesize selectedToken = _selectedToken;
 @synthesize tokenizingCharacters = _tokenizingCharacters;
@@ -455,6 +456,7 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 	_tokens = [NSMutableArray array];
 	_editable = YES;
 	_removesTokensOnEndEditing = YES;
+    _becomesFirstResponderOnAddingToken = YES;
     _minimumRightPadding = 50.0f;
 	_tokenizingCharacters = [NSCharacterSet characterSetWithCharactersInString:@","];
 }
@@ -609,7 +611,9 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 	
 	if (shouldAdd){
 		
-		[self becomeFirstResponder];
+        if (_becomesFirstResponderOnAddingToken) {
+            [self becomeFirstResponder];
+        }
 		
 		[token addTarget:self action:@selector(tokenTouchDown:) forControlEvents:UIControlEventTouchDown];
 		[token addTarget:self action:@selector(tokenTouchUpInside:) forControlEvents:UIControlEventTouchUpInside];
