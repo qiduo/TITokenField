@@ -671,6 +671,10 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 	
 	_selectedToken = token;
 	[_selectedToken setSelected:YES];
+    
+    if ([delegate respondsToSelector:@selector(tokenField:didSelectToken:)]) {
+        [delegate tokenField:self didSelectToken:token];
+    }
 	
 	[self becomeFirstResponder];
 	[self setText:kTextHidden];
@@ -707,7 +711,16 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 }
 
 - (void)tokenTouchUpInside:(TIToken *)token {
-	if (_editable) [self selectToken:token];
+    
+    if ([delegate respondsToSelector:@selector(tokenField:shouldSelectToken:)]) {
+        if ([delegate tokenField:self shouldSelectToken:token]) {
+            [self selectToken:token];
+        }
+    } else {
+        if (_editable) {
+            [self selectToken:token];
+        }
+    }
 }
 
 - (CGFloat)layoutTokensInternal {

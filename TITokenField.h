@@ -40,6 +40,9 @@
 - (BOOL)tokenField:(TITokenField *)tokenField willRemoveToken:(TIToken *)token;
 - (void)tokenField:(TITokenField *)tokenField didRemoveToken:(TIToken *)token;
 
+- (BOOL)tokenField:(TITokenField *)tokenField shouldSelectToken:(TIToken *)token;
+- (void)tokenField:(TITokenField *)tokenField didSelectToken:(TIToken *)token;
+
 - (void)tokenField:(TITokenField *)tokenField didFinishSearch:(NSArray *)matches;
 - (NSString *)tokenField:(TITokenField *)tokenField displayStringForRepresentedObject:(id)object;
 - (NSString *)tokenField:(TITokenField *)tokenField searchResultStringForRepresentedObject:(id)object;
