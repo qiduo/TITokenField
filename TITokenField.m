@@ -726,8 +726,8 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 - (CGFloat)layoutTokensInternal {
 	
 	CGFloat topMargin = floor(self.font.lineHeight * 4 / 9);
-	CGFloat leftMargin = self.leftViewWidth + 12;
-	CGFloat hPadding = 8;
+    CGFloat hPadding = 8;
+	CGFloat leftMargin = self.leftViewWidth + hPadding;
 	CGFloat rightMargin = self.rightViewWidth + hPadding;
 	CGFloat lineHeight = self.font.lineHeight + topMargin + 1;
 	
