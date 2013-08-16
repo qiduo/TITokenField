@@ -40,6 +40,7 @@
 - (BOOL)tokenField:(TITokenField *)tokenField willRemoveToken:(TIToken *)token;
 - (void)tokenField:(TITokenField *)tokenField didRemoveToken:(TIToken *)token;
 
+- (void)tokenField:(TITokenField *)tokenField didTouchToken:(TIToken *)token;
 - (BOOL)tokenField:(TITokenField *)tokenField shouldSelectToken:(TIToken *)token;
 - (void)tokenField:(TITokenField *)tokenField didSelectToken:(TIToken *)token;
 
@@ -91,6 +92,9 @@ typedef enum {
 @property (nonatomic, assign) BOOL removesTokensOnEndEditing;
 @property (nonatomic, assign) BOOL becomesFirstResponderOnAddingToken;
 @property (nonatomic, assign) CGFloat minimumRightPadding;
+@property (nonatomic, assign) CGFloat tokenMargin;
+@property (nonatomic, assign) CGFloat topLineHeightAdjustment;
+@property (nonatomic, assign) UIEdgeInsets insets;
 @property (nonatomic, readonly) int numberOfLines;
 @property (nonatomic, strong) NSCharacterSet * tokenizingCharacters;
 
@@ -132,9 +136,11 @@ typedef enum {
 @property (nonatomic, strong) id representedObject;
 @property (nonatomic, strong) UIFont * font;
 @property (nonatomic, strong) UIFont * superscriptFont;
+@property (nonatomic, assign) UIOffset superscriptPositionAdjustment;
 @property (nonatomic, strong) UIColor * tintColor UI_APPEARANCE_SELECTOR;
 @property (nonatomic, strong) UIColor * textColor;
 @property (nonatomic, strong) UIColor * highlightedTextColor;
+@property (nonatomic, assign) UIOffset textPositionAdjustment;
 @property (nonatomic, assign) TITokenAccessoryType accessoryType;
 @property (nonatomic, assign) TITokenUnderlineType underlineType;
 @property (nonatomic, assign) CGFloat underlineWidth;

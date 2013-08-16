@@ -414,6 +414,9 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 @synthesize selectedToken = _selectedToken;
 @synthesize tokenizingCharacters = _tokenizingCharacters;
 @synthesize forcePickSearchResult = _forcePickSearchResult;
+@synthesize tokenMargin = _tokenMargin;
+@synthesize topLineHeightAdjustment = _topLineHeightAdjustment;
+@synthesize insets = _insets;
 
 #pragma mark Init
 - (id)initWithFrame:(CGRect)frame {
@@ -458,7 +461,10 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 	_removesTokensOnEndEditing = YES;
     _becomesFirstResponderOnAddingToken = YES;
     _minimumRightPadding = 50.0f;
+    _tokenMargin = 4.0f;
 	_tokenizingCharacters = [NSCharacterSet characterSetWithCharactersInString:@","];
+    _topLineHeightAdjustment = 0.0f;
+    _insets = UIEdgeInsetsMake(floor(self.font.lineHeight * 4 / 9), 8.0f, 0.0f, 8.0f);
 }
 
 #pragma mark Property Overrides
@@ -708,6 +714,10 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 		[_selectedToken setSelected:NO];
 		_selectedToken = nil;
 	}
+    
+    if ([delegate respondsToSelector:@selector(tokenField:didTouchToken:)]) {
+        [delegate tokenField:self didTouchToken:token];
+    }
 }
 
 - (void)tokenTouchUpInside:(TIToken *)token {
@@ -725,40 +735,49 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 
 - (CGFloat)layoutTokensInternal {
 	
-	CGFloat topMargin = floor(self.font.lineHeight * 4 / 9);
-    CGFloat hPadding = 8;
-	CGFloat leftMargin = self.leftViewWidth + hPadding;
-	CGFloat rightMargin = self.rightViewWidth + hPadding;
-	CGFloat lineHeight = self.font.lineHeight + topMargin + 1;
+	CGFloat lineMargin = floor(self.font.lineHeight * 4 / 9);
+	CGFloat leftMargin = self.leftViewWidth + _insets.left;
+	CGFloat rightMargin = self.rightViewWidth + _insets.right;
+    CGFloat lineHeight = self.font.lineHeight + lineMargin + 1;
+    CGFloat firstLineHeight = lineHeight + self.topLineHeightAdjustment;
 	
 	_numberOfLines = 1;
-	_tokenCaret = (CGPoint){leftMargin, (topMargin - 1)};
+	_tokenCaret = (CGPoint){leftMargin, _insets.top};
 	
 	[_tokens enumerateObjectsUsingBlock:^(TIToken * token, NSUInteger idx, BOOL *stop){
 		
 		[token setFont:self.font];
-		[token setMaxWidth:(self.bounds.size.width - rightMargin - (_numberOfLines > 1 ? hPadding : leftMargin))];
+		[token setMaxWidth:(self.bounds.size.width - rightMargin - (_numberOfLines > 1 ? _insets.left : leftMargin))];
 		
-		if (token.superview){
+		if (token.superview) {
 			
-			if (_tokenCaret.x + token.bounds.size.width + rightMargin > self.bounds.size.width){
+			if (_tokenCaret.x + token.bounds.size.width + rightMargin > self.bounds.size.width) {
 				_numberOfLines++;
-				_tokenCaret.x = (_numberOfLines > 1 ? hPadding : leftMargin);
-				_tokenCaret.y += lineHeight;
+				_tokenCaret.x = (_numberOfLines > 1 ? _insets.left : leftMargin);
+				_tokenCaret.y += _numberOfLines == 2 ? firstLineHeight : lineHeight;
 			}
+            
+            if (_numberOfLines == 1) {
+                [token setSuperscriptPositionAdjustment:UIOffsetMake(0.0f, self.topLineHeightAdjustment)];
+                [token setTextPositionAdjustment:UIOffsetMake(0.0f, self.topLineHeightAdjustment / 2)];
+                [token setFrame:(CGRect){_tokenCaret, CGSizeMake(token.frame.size.width, firstLineHeight)}];
+            } else {
+                [token setSuperscriptPositionAdjustment:UIOffsetZero];
+                [token setTextPositionAdjustment:UIOffsetZero];
+                [token setFrame:(CGRect){_tokenCaret, CGSizeMake(token.frame.size.width, lineHeight)}];
+            }
 			
-			[token setFrame:(CGRect){_tokenCaret, token.bounds.size}];
-			_tokenCaret.x += token.bounds.size.width + 4;
+			_tokenCaret.x += token.bounds.size.width + _tokenMargin;
 			
 			if (self.bounds.size.width - _tokenCaret.x - rightMargin < _minimumRightPadding) {
 				_numberOfLines++;
-				_tokenCaret.x = (_numberOfLines > 1 ? hPadding : leftMargin);
-				_tokenCaret.y += lineHeight;
+				_tokenCaret.x = (_numberOfLines > 1 ? _insets.left : leftMargin);
+				_tokenCaret.y += _numberOfLines == 2 ? firstLineHeight : lineHeight;
 			}
 		}
 	}];
 	
-	return _tokenCaret.y + lineHeight;
+	return _numberOfLines == 1 ? _tokenCaret.y + firstLineHeight : _tokenCaret.y + lineHeight;
 }
 
 #pragma mark View Handlers
@@ -810,6 +829,7 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 		UILabel * label = (UILabel *)self.leftView;
 		if (!label || ![label isKindOfClass:[UILabel class]]){
 			label = [[UILabel alloc] initWithFrame:CGRectZero];
+            [label setBackgroundColor:[UIColor clearColor]];
 			[label setTextColor:[UIColor colorWithWhite:0.5 alpha:1]];
 			[self setLeftView:label];
 			
@@ -1019,6 +1039,8 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
 @synthesize textColor = _textColor;
 @synthesize accessoryType = _accessoryType;
 @synthesize maxWidth = _maxWidth;
+@synthesize superscriptPositionAdjustment = _superscriptPositionAdjustment;
+@synthesize textPositionAdjustment = _textPositionAdjustment;
 
 #pragma mark Init
 - (id)initWithTitle:(NSString *)aTitle {
@@ -1038,9 +1060,11 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
 		
 		_font = aFont;
         _superscriptFont = [UIFont systemFontOfSize:8.0f];
+        _superscriptPositionAdjustment = UIOffsetZero;
 		_tintColor = [TIToken blueTintColor];
         _textColor = [UIColor blackColor];
         _highlightedTextColor = [UIColor whiteColor];
+        _textPositionAdjustment = UIOffsetZero;
 		
 		_accessoryType = TITokenAccessoryTypeNone;
 		_maxWidth = 200.0f;
@@ -1052,6 +1076,7 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
         _showsBackground = YES;
         _adjustsTextWhenHighlighted = YES;
 		
+        self.contentMode = UIViewContentModeRedraw;
 		[self setBackgroundColor:[UIColor clearColor]];
 		[self sizeToFit];
 	}
@@ -1204,6 +1229,21 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
     }
 }
 
+- (void)setSuperscriptPositionAdjustment:(UIOffset)superscriptPositionAdjustment {
+    if (UIOffsetEqualToOffset(_superscriptPositionAdjustment, superscriptPositionAdjustment) == NO) {
+        _superscriptPositionAdjustment = superscriptPositionAdjustment;
+        [self setNeedsDisplay];
+    }
+}
+
+
+- (void)setTextPositionAdjustment:(UIOffset)textPositionAdjustment {
+    if (UIOffsetEqualToOffset(_textPositionAdjustment, textPositionAdjustment) == NO) {
+        _textPositionAdjustment = textPositionAdjustment;
+        [self setNeedsDisplay];
+    }
+}
+
 #pragma Tint Color Convenience
 
 + (UIColor *)blueTintColor {
@@ -1344,7 +1384,7 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
     }
     
     if (_superscript.length > 0) {
-		CGRect superscirptBounds = CGRectMake(0.0f, 0.0f, superscirptWidth, superscriptSize.height);
+		CGRect superscirptBounds = CGRectMake(0.0f + self.superscriptPositionAdjustment.horizontal, 0.0f + self.superscriptPositionAdjustment.vertical, superscirptWidth, superscriptSize.height);
         
         CGContextSaveGState(context);
 		CGContextSetFillColorWithColor(context, [_textColor CGColor]);
@@ -1355,7 +1395,7 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
 	CGSize titleSize = [_title sizeWithFont:_font forWidth:(_maxWidth - _horizontalTextPadding - accessoryWidth - superscirptWidth) lineBreakMode:kLineBreakMode];
 	CGFloat vPadding = floor((self.bounds.size.height - titleSize.height) / 2);
 	CGFloat titleWidth = ceilf(self.bounds.size.width - _horizontalTextPadding - accessoryWidth - superscirptWidth);
-	CGRect textBounds = CGRectMake(floorf(_horizontalTextPadding / 2) + superscirptWidth, vPadding - 1, titleWidth, floorf(self.bounds.size.height - (vPadding * 2)));
+	CGRect textBounds = CGRectMake(floorf(_horizontalTextPadding / 2) + superscirptWidth + _textPositionAdjustment.horizontal, vPadding - 1 + _textPositionAdjustment.vertical, titleWidth, floorf(self.bounds.size.height - (vPadding * 2)));
 	
     if (_adjustsTextWhenHighlighted) {
         CGContextSetFillColorWithColor(context, drawHighlighted ? _highlightedTextColor.CGColor : _textColor.CGColor);
