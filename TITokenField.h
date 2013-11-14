@@ -139,6 +139,7 @@ typedef enum {
 @property (nonatomic, assign) UIOffset superscriptPositionAdjustment;
 @property (nonatomic, strong) UIColor * tintColor UI_APPEARANCE_SELECTOR;
 @property (nonatomic, strong) UIColor * textColor;
+@property (nonatomic, strong) UIColor * superscriptTextColor;
 @property (nonatomic, strong) UIColor * highlightedTextColor;
 @property (nonatomic, assign) UIOffset textPositionAdjustment;
 @property (nonatomic, assign) TITokenAccessoryType accessoryType;

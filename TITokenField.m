@@ -1162,6 +1162,17 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
 	}
 }
 
+- (void)setSuperscriptTextColor:(UIColor *)superscriptTextColor
+{
+    if (!superscriptTextColor) {
+        superscriptTextColor = [UIColor blackColor];
+    }
+    if (_superscriptTextColor != superscriptTextColor) {
+        _superscriptTextColor = superscriptTextColor;
+        [self setNeedsDisplay];
+    }
+}
+
 - (void)setAccessoryType:(TITokenAccessoryType)type {
 	
 	if (_accessoryType != type){
@@ -1387,7 +1398,7 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
 		CGRect superscirptBounds = CGRectMake(0.0f + self.superscriptPositionAdjustment.horizontal, 0.0f + self.superscriptPositionAdjustment.vertical, superscirptWidth, superscriptSize.height);
         
         CGContextSaveGState(context);
-		CGContextSetFillColorWithColor(context, [_textColor CGColor]);
+		CGContextSetFillColorWithColor(context, _superscriptTextColor.CGColor);
 		[_superscript drawInRect:superscirptBounds withFont:_superscriptFont lineBreakMode:kLineBreakMode];
         CGContextRestoreGState(context);
 	}
