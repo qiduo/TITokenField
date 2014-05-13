@@ -592,21 +592,9 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 	return [super beginTrackingWithTouch:touch withEvent:event];
 }
 
-
 #pragma mark Token Handling
-
 - (TIToken *)addTokenWithTitle:(NSString *)title {
 	return [self addTokenWithTitle:title representedObject:nil];
-}
-
-- (TIToken *)addTokenWithTitle:(NSString *)title expandedTitle:(NSString *)expandedTitle
-{
-    if (title.length) {
-        TIToken *token = [[TIToken alloc] initWithTitle:title expandedTitle:expandedTitle];
-        [self addToken:token];
-        return token;
-    }
-    return nil;
 }
 
 - (TIToken *)addTokenWithTitle:(NSString *)title representedObject:(id)object {
@@ -792,9 +780,7 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 	return _numberOfLines == 1 ? _tokenCaret.y + firstLineHeight : _tokenCaret.y + lineHeight;
 }
 
-
 #pragma mark View Handlers
-
 - (void)layoutTokensAnimated:(BOOL)animated {
 	
 	CGFloat newHeight = [self layoutTokensInternal];
@@ -1038,23 +1024,13 @@ CGFloat const kDisclosureThickness = 2.5;
 UILineBreakMode const kLineBreakMode = UILineBreakModeTailTruncation;
 
 @interface TIToken (Private)
-
 CGPathRef CGPathCreateTokenPath(CGRect rect, BOOL innerPath);
 CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat height, CGFloat thickness, CGFloat * width);
 - (BOOL)getTintColorRed:(CGFloat *)red green:(CGFloat *)green blue:(CGFloat *)blue alpha:(CGFloat *)alpha;
 @end
 
-@interface TIToken ()
-
-@property (nonatomic, copy) NSString *normalTitle;
-@property (nonatomic, assign) BOOL expanded;
-
-@end
-
 @implementation TIToken
 @synthesize title = _title;
-@synthesize expandedTitle = _expandedTitle;
-@synthesize normalTitle = _normalTitle;
 @synthesize superscript = _superscript;
 @synthesize representedObject = _representedObject;
 @synthesize font = _font;
@@ -1069,14 +1045,6 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
 #pragma mark Init
 - (id)initWithTitle:(NSString *)aTitle {
 	return [self initWithTitle:aTitle representedObject:nil];
-}
-
-- (id)initWithTitle:(NSString *)aTitle expandedTitle:(NSString *)expandedTitle {
-    self = [self initWithTitle:aTitle];
-    _expandedTitle = expandedTitle;
-    _normalTitle = aTitle;
-    _expanded = NO;
-    return self;
 }
 
 - (id)initWithTitle:(NSString *)aTitle representedObject:(id)object {
@@ -1115,7 +1083,6 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
 	
 	return self;
 }
-
 
 #pragma mark Property Overrides
 - (void)setHighlighted:(BOOL)flag {
@@ -1523,14 +1490,8 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
 }
 
 #pragma mark Other
-
 - (NSString *)description {
 	return [NSString stringWithFormat:@"<TIToken %p; title = \"%@\"; representedObject = \"%@\">", self, _title, _representedObject];
-}
-
-- (void)toggleTokenTitle {
-    self.title = self.expanded && self.expandedTitle.length > 0 ? self.normalTitle : self.expandedTitle;
-    self.expanded = !self.expanded;
 }
 
 

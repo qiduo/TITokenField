@@ -100,7 +100,6 @@ typedef enum {
 
 - (void)addToken:(TIToken *)title;
 - (TIToken *)addTokenWithTitle:(NSString *)title;
-- (TIToken *)addTokenWithTitle:(NSString *)title expandedTitle:(NSString *)expandedTitle;
 - (TIToken *)addTokenWithTitle:(NSString *)title representedObject:(id)object;
 - (void)removeToken:(TIToken *)token;
 - (void)removeAllTokens;
@@ -133,7 +132,6 @@ typedef enum {
 
 @interface TIToken : UIControl
 @property (nonatomic, copy) NSString * title;
-@property (nonatomic, copy) NSString * expandedTitle;
 @property (nonatomic, copy) NSString * superscript;
 @property (nonatomic, strong) id representedObject;
 @property (nonatomic, strong) UIFont * font;
@@ -155,11 +153,8 @@ typedef enum {
 @property (nonatomic, assign) CGFloat horizontalTextPadding;
 
 - (id)initWithTitle:(NSString *)aTitle;
-- (id)initWithTitle:(NSString *)aTitle expandedTitle:(NSString *)expandedTitle;
 - (id)initWithTitle:(NSString *)aTitle representedObject:(id)object;
 - (id)initWithTitle:(NSString *)aTitle representedObject:(id)object font:(UIFont *)aFont;
-
-- (void)toggleTokenTitle;
 
 + (UIColor *)blueTintColor;
 + (UIColor *)redTintColor;
