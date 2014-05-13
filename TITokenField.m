@@ -782,19 +782,26 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 
 #pragma mark View Handlers
 - (void)layoutTokensAnimated:(BOOL)animated {
-	
 	CGFloat newHeight = [self layoutTokensInternal];
-	if (self.bounds.size.height != newHeight){
-		
-		// Animating this seems to invoke the triple-tap-delete-key-loop-problem-thing™
-		[UIView animateWithDuration:(animated ? 0.3 : 0) animations:^{
-			[self setFrame:((CGRect){self.frame.origin, {self.bounds.size.width, newHeight}})];
-			[self sendActionsForControlEvents:(UIControlEvents)TITokenFieldControlEventFrameWillChange];
-			
-		} completion:^(BOOL complete){
-			if (complete) [self sendActionsForControlEvents:(UIControlEvents)TITokenFieldControlEventFrameDidChange];
-		}];
-	}
+    if (self.bounds.size.height == newHeight) {
+        return;
+    }
+    
+    void (^animations)(void) = ^{
+        [self setFrame:((CGRect){self.frame.origin, {self.bounds.size.width, newHeight}})];
+        [self sendActionsForControlEvents:(UIControlEvents)TITokenFieldControlEventFrameWillChange];
+    };
+    
+    void (^completion)(BOOL finished) = ^(BOOL complete){
+        if (complete) [self sendActionsForControlEvents:(UIControlEvents)TITokenFieldControlEventFrameDidChange];
+    };
+    
+    if (animated) {
+        [UIView animateWithDuration:0.3f animations:animations completion:completion];
+    } else {
+        animations();
+        completion(YES);
+    }
 }
 
 - (void)setResultsModeEnabled:(BOOL)flag {
@@ -874,6 +881,11 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 }
 
 #pragma mark Layout
+
+- (CGSize)sizeThatFits:(CGSize)size {
+    return CGSizeMake(self.bounds.size.width, [self layoutTokensInternal]);
+}
+
 - (CGRect)textRectForBounds:(CGRect)bounds {
 	
 	if ([self.text isEqualToString:kTextHidden]) return CGRectMake(0, -20, 0, 0);
